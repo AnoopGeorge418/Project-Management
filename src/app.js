@@ -1,5 +1,6 @@
 import express, { urlencoded } from "express"
 import cors from "cors";
+import healthCheckRouter from "./routes/healthCheck.route.js";
 
 const app = express();
 
@@ -15,6 +16,9 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// Routes
+app.use("/api/v1/healthcheck", healthCheckRouter);
 
 
 app.get("/", (req, res) => {
