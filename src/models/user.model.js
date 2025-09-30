@@ -1,7 +1,7 @@
-import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import mongoose, { Schema } from "mongoose";
 
 // User Schema for mongodb
 const userSchema = new Schema({
@@ -15,13 +15,15 @@ const userSchema = new Schema({
             localPath: "",
         }
     },
-    userName: {
+    username: {
         type: String,
-        required: true,
+        required: [true, "Username is required"],
         unique: true,
         lowercase: true,
         trim: true,
-        index: true
+        index: true,
+        minlength: [3, "Username must be at least 3 characters long"],
+        match: [/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscores and hyphens"]
     },
     email: {
         type: String,
@@ -63,11 +65,19 @@ const userSchema = new Schema({
 }
 );
 
-// Password hashing middleware
+// Pre-save middleware for validation and password hashing
 userSchema.pre("save", async function (next){
-    if (!this.isModified("password")) return next()
+    // Validate username is not null or empty
+    if (!this.username || typeof this.username !== 'string' || this.username.trim().length === 0) {
+        next(new Error('Username cannot be null or empty'));
+        return;
+    }
     
-    this.password = await bcrypt.hash(this.password, 10)
+    // Password hashing
+    if (this.isModified("password")) {
+        this.password = await bcrypt.hash(this.password, 10);
+    }
+    
     next();
 })
 
@@ -81,7 +91,7 @@ userSchema.methods.generateAccessToken = function() {
     return jwt.sign({
         _id: this._id,
         email: this.email,
-        userName: this.userName,
+        username: this.username,
     }, 
     process.env.ACCESS_TOKEN_SECRET, 
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }

@@ -2,7 +2,7 @@ import mailgen from 'mailgen';
 import nodemailer from 'nodemailer';
 
 const sendEmail = async(options) => {
-    const mailGenerator = new Mailgen({
+    const mailGenerator = new mailgen({
         theme: 'default',
         product: {
             name: 'Project Management',
@@ -78,6 +78,6 @@ export {
     emailVerificationMailgenContent,
     forgotPasswordMailgenContent,
     sendEmail
-}
+};
 
 
